@@ -1,36 +1,53 @@
 import os
 from src.data_loader import load_dataset
-from src.visualizer import plot_curves, save_as_svg, save_as_png
+from src.visualizer import plot_paths, save_plot_as_svg, save_plot_as_png
+
+# Constants for directories
+DATA_DIR = "./src/problems"  # Update this path to where your CSV and SVG files are located
+OUTPUT_DIR = "./output"
+
+def process_file(name, csv_data, output_dir):
+    """
+    Process a single CSV file: plot, save as SVG, and convert to PNG.
+    
+    Parameters:
+        name (str): The name of the CSV file (without extension).
+        csv_data (list): The parsed data from the CSV file.
+        output_dir (str): The directory to save the output SVG and PNG files.
+    """
+    print(f"Processing {name}")
+
+    # Plot original data
+    fig, ax = plot_paths(csv_data, color='blue')
+    
+    # Save original data as SVG
+    svg_filename = os.path.join(output_dir, f"{name}_from_csv.svg")
+    save_plot_as_svg(fig, svg_filename)
+    
+    # Save as PNG
+    png_filename = os.path.join(output_dir, f"{name}_from_csv.png")
+    save_plot_as_png(fig, png_filename)
+    
+    print(f"Saved {svg_filename} and {png_filename}")
+    print(f"Finished processing {name}")
 
 def main():
-    data_dir = "./src/problems"  # Update this path to where your CSV and SVG files are located
-    dataset = load_dataset(data_dir)
-
+    # Load the dataset
+    dataset = load_dataset(DATA_DIR)
+    
     if not dataset:
         print("No CSV files found in the specified directory.")
         return
-
+    
     print(f"Found {len(dataset)} CSV files.")
-
-    svg_output_dir = "./output"
-    os.makedirs(svg_output_dir, exist_ok=True)
-
+    
+    # Ensure the output directory exists
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    
+    # Process each file in the dataset
     for name, csv_data in dataset.items():
         try:
-            print(f"Processing {name}")
-            
-            # Plot original data
-            plot_curves(csv_data, f"Original: {name}")
-            
-            # Save original data as SVG
-            svg_filename = os.path.join(svg_output_dir, f"{name}_from_csv.svg")
-            save_as_svg(csv_data, svg_filename)
-            
-            # Convert SVG to PNG
-            png_filename = save_as_png(csv_data, svg_filename)
-            print(f"Saved {svg_filename} and {png_filename}")
-            
-            print(f"Finished processing {name}")
+            process_file(name, csv_data, OUTPUT_DIR)
         except Exception as e:
             print(f"Error processing {name}: {e}")
         print("------------------------")
